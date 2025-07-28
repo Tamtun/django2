@@ -1,4 +1,4 @@
-# Django Homework Project 📘
+# Django Homework Project  📘
 
 Учебный проект на Django для выполнения домашних заданий в рамках курса.
 
