@@ -3,7 +3,7 @@ from django.http import HttpResponse
 from .models import Product
 from django.shortcuts import render, get_object_or_404
 
-# Create your views here.
+
 def index(request):
     return HttpResponse("Это приложение catalog — всё работает!")
 

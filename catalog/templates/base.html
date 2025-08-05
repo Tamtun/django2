@@ -8,10 +8,9 @@
   <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}">
 </head>
 <body>
-  {% include 'partials/navbar.html' %}  <!-- 🍔 Меню -->
+  {% include 'partials/navbar.html' %}
 
   {% block header %}
-  <!-- Можно переопределить заголовок на каждой странице -->
   {% endblock %}
 
   <div class="container mt-4">
