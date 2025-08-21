@@ -6,18 +6,21 @@ FORBIDDEN_WORDS = [
     'дешево', 'бесплатно', 'обман', 'полиция', 'радар'
 ]
 
-class ProductForm(forms.ModelForm):
-    class Meta:
-        model = Product
-        fields = ['name', 'description', 'image', 'category', 'purchase_price']
-
+class StyleFormMixin:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         for field_name, field in self.fields.items():
-            if not isinstance(field.widget, forms.FileInput):
-                field.widget.attrs['class'] = 'form-control'
-            else:
+            if isinstance(field.widget, forms.FileInput):
                 field.widget.attrs['class'] = 'form-control-file'
+            elif isinstance(field, forms.BooleanField):
+                field.widget.attrs['class'] = 'form-check-input'
+            else:
+                field.widget.attrs['class'] = 'form-control'
+
+class ProductForm(StyleFormMixin, forms.ModelForm):
+    class Meta:
+        model = Product
+        fields = ['name', 'description', 'image', 'category', 'purchase_price']
 
     def clean_name(self):
         name = self.cleaned_data.get('name', '').lower()
