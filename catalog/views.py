@@ -4,8 +4,9 @@ from django.views.generic import (
     CreateView, UpdateView, DeleteView
 )
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
+from django.core.exceptions import PermissionDenied
 from .models import Product
 from .forms import ProductForm
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -35,10 +36,20 @@ class ProductCreateView(LoginRequiredMixin, CreateView):
     template_name = 'product_form.html'
     success_url = reverse_lazy('home')
 
+    def form_valid(self, form):
+        form.instance.owner = self.request.user
+        return super().form_valid(form)
+
 class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
     form_class = ProductForm
     template_name = 'product_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product.owner != request.user:
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
 
     def get_success_url(self):
         return reverse('product-detail', kwargs={'pk': self.object.pk})
@@ -47,3 +58,19 @@ class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
     template_name = 'product_confirm_delete.html'
     success_url = reverse_lazy('home')
+
+    def dispatch(self, request, *args, **kwargs):
+        product = self.get_object()
+        if product.owner != request.user and not request.user.has_perm('catalog.delete_product'):
+            raise PermissionDenied
+        return super().dispatch(request, *args, **kwargs)
+
+class UnpublishProductView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        if not request.user.has_perm('catalog.can_unpublish_product'):
+            raise PermissionDenied
+
+        product = get_object_or_404(Product, pk=pk)
+        product.is_published = False
+        product.save()
+        return redirect('product-detail', pk=pk)

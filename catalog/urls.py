@@ -1,7 +1,7 @@
 from django.urls import path, include
 from .views import (
     IndexView, HomeView, ProductDetailView, ContactsView,
-    ProductCreateView, ProductUpdateView, ProductDeleteView
+    ProductCreateView, ProductUpdateView, ProductDeleteView, UnpublishProductView
 )
 
 urlpatterns = [
@@ -13,4 +13,6 @@ urlpatterns = [
     path('contacts/', ContactsView.as_view(), name='contacts'),
     path('index/', IndexView.as_view(), name='catalog-index'),
     path('blogs/', include('blog.urls')),
+    path('products/<int:pk>/unpublish/', UnpublishProductView.as_view(), name='product-unpublish'),
+
 ]
