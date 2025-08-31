@@ -7,19 +7,15 @@ class Command(BaseCommand):
     help = 'Создаёт группу "Модератор продуктов" с нужными правами'
 
     def handle(self, *args, **kwargs):
-        group, created = Group.objects.get_or_create(name='Модератор продуктов')
+        group, _ = Group.objects.get_or_create(name='Модератор продуктов')
         content_type = ContentType.objects.get_for_model(Product)
 
-        can_unpublish = Permission.objects.get(
-            codename='can_unpublish_product',
-            content_type=content_type
-        )
-        can_delete = Permission.objects.get(
-            codename='delete_product',
-            content_type=content_type
+        permissions = Permission.objects.filter(
+            content_type=content_type,
+            codename__in=['can_unpublish_product', 'delete_product']
         )
 
-        group.permissions.set([can_unpublish, can_delete])
+        group.permissions.set(permissions)
         group.save()
 
-        self.stdout.write(self.style.SUCCESS('Группа "Модератор продуктов" создана и настроена'))
+        self.stdout.write(self.style.SUCCESS('✅ Группа "Модератор продуктов" создана и настроена'))
