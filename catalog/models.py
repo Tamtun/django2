@@ -34,4 +34,5 @@ class Product(models.Model):
     class Meta:
         permissions = [
             ("can_unpublish_product", "Can unpublish product"),
+            ("delete_product", "Can delete product"),
         ]
