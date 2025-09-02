@@ -13,6 +13,25 @@
           <p class="card-text">{{ product.description }}</p>
           <p class="card-text"><strong>Цена:</strong> {{ product.purchase_price }} ₽</p>
           <p class="card-text"><strong>Категория:</strong> {{ product.category.name }}</p>
+
+          {% if user.is_authenticated %}
+            <div class="mt-4 d-flex gap-2">
+              {% if perms.catalog.can_unpublish_product and product.is_published %}
+                <form method="post" action="{% url 'product-unpublish' product.pk %}">
+                  {% csrf_token %}
+                  <button type="submit" class="btn btn-warning">Снять с публикации</button>
+                </form>
+              {% endif %}
+
+              {% if product.owner == user %}
+                <a href="{% url 'product_update' product.pk %}" class="btn btn-secondary">Редактировать</a>
+              {% endif %}
+
+              {% if product.owner == user or perms.catalog.delete_product %}
+                <a href="{% url 'product_delete' product.pk %}" class="btn btn-danger">Удалить</a>
+              {% endif %}
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
