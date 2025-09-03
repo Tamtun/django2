@@ -10,7 +10,7 @@ from django.core.exceptions import PermissionDenied
 from .models import Product, Category
 from .forms import ProductForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-from .services import get_products_by_category
+from .services import get_products_by_category, get_all_products_cached
 from django.core.cache import cache
 
 class IndexView(View):
@@ -19,13 +19,9 @@ class IndexView(View):
 
 class HomeView(View):
     def get(self, request):
-        products = cache.get('home_products')
-
-        if not products:
-            products = Product.objects.filter(is_published=True).select_related('category', 'owner')
-            cache.set('home_products', products, timeout=60)  # кеш на 60 секунд
-
+        products = get_all_products_cached()
         return render(request, 'home.html', {'products': products})
+
 
 class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
