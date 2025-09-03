@@ -4,22 +4,24 @@ from django.views.generic import (
     CreateView, UpdateView, DeleteView
 )
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse_lazy, reverse
 from django.core.exceptions import PermissionDenied
-from .models import Product
+from .models import Product, Category
 from .forms import ProductForm
 from django.contrib.auth.mixins import LoginRequiredMixin
-
+from .services import get_products_by_category, get_all_products_cached
+from django.core.cache import cache
 
 class IndexView(View):
     def get(self, request):
         return HttpResponse("Это приложение catalog — всё работает!")
 
-class HomeView(ListView):
-    model = Product
-    template_name = 'home.html'
-    context_object_name = 'products'
+class HomeView(View):
+    def get(self, request):
+        products = get_all_products_cached()
+        return render(request, 'home.html', {'products': products})
+
 
 class ProductDetailView(LoginRequiredMixin, DetailView):
     model = Product
@@ -74,3 +76,12 @@ class UnpublishProductView(LoginRequiredMixin, View):
         product.is_published = False
         product.save()
         return redirect('product-detail', pk=pk)
+
+class ProductsByCategoryView(View):
+    def get(self, request, category_id):
+        category = Category.objects.get(pk=category_id)
+        products = get_products_by_category(category_id)
+        return render(request, 'products_by_category.html', {
+            'category': category,
+            'products': products
+        })
